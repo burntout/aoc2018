@@ -8,13 +8,13 @@ main = do
         ints = map stringToInt ss
         foreverInts = cycle ints
         partialSums = scanl (+) 0 foreverInts
-    putStrLn $ show $ isFirstDuplicate partialSums Set.empty
+    putStrLn $ show $ getFirstDuplicate partialSums Set.empty
 
 stringToInt s 
     | head s == '+' = stringToInt $ tail s
     | otherwise       = read s::Int
 
-isFirstDuplicate (x:xs) s
+getFirstDuplicate (x:xs) s
     | Set.member x s = x
-    | otherwise      = isFirstDuplicate xs $ Set.insert x s
+    | otherwise      = getFirstDuplicate xs $ Set.insert x s
 
