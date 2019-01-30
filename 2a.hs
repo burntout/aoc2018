@@ -6,18 +6,14 @@ main = do
     tls <- fmap Text.lines (Text.readFile "2.txt")
     let ss = map Text.unpack tls
         strPairs = pairs ss 
-        result = head $ filter (/= []) $ map oneDifferences strPairs
-        first = head result
-        second = last result
-    putStrLn $ show $ commonChar first second
+        boxIDs = fst $ head $ filter (\x -> snd x == 1) strPairs
+        box1 = fst boxIDs
+        box2 = snd boxIDs
+    putStrLn $ show $ commonChar box1 box2
    
-pairs l = [(x,y) | (x:ys) <- tails l, y <- ys]
+pairs l = [((x,y), numDifferences x y) | (x:ys) <- tails l, y <- ys]
 
-numDifferences (xs, ys) = length $ filter ( == True) $ zipWith (\x y -> x /= y) xs ys
-
-oneDifferences (xs, ys) 
-    | numDifferences (xs, ys)  == 1  = [xs,ys]
-    | otherwise                      = []
+numDifferences xs ys = length $ filter (== True) $ zipWith (\x y -> x /= y) xs ys
 
 commonChar [] [] = []
 commonChar (x:xs) (y:ys)
