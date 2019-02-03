@@ -14,10 +14,10 @@ main = do
     claimText <- fmap Text.lines (Text.readFile "3.txt")
     let claimStrings =  map Text.unpack claimText
         claims = map stringToClaim claimStrings
-    putStrLn $ show $ findNonOverlapping claims
+    -- putStrLn $ show $ findNonOverlapping claims
     -- putStrLn $ show $ findNonOverlap claims
     --    c = getClaim 88 claims
-    -- putStrLn  $ show $ fno claims
+    putStrLn  $ show $ fno claims
 
 stringToClaim str = Claim { claimID = claimID, corner = (x,y), xLength = xl, yLength =  yl }
     where 
@@ -52,4 +52,4 @@ findNonOverlap (c:cs)
 
 getClaim n cs = head $ filter (\x -> claimID x == n) cs
 
-fno cs = [c | c <- cs, 1 == (length $ overlaps c cs)]
+fno cs = [c | c <- cs, (length $ overlaps c cs) == 2]
