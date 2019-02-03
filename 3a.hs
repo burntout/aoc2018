@@ -15,6 +15,9 @@ main = do
     let claimStrings =  map Text.unpack claimText
         claims = map stringToClaim claimStrings
     putStrLn $ show $ findNonOverlapping claims
+    -- putStrLn $ show $ findNonOverlap claims
+    --    c = getClaim 88 claims
+    -- putStrLn  $ show $ fno claims
 
 stringToClaim str = Claim { claimID = claimID, corner = (x,y), xLength = xl, yLength =  yl }
     where 
@@ -38,3 +41,15 @@ intersectClaims x y = Set.intersection xp yp
           yp = claimToPoints y
 
 findNonOverlapping cs = filter (\x -> snd x == Set.empty) [(c, Set.unions $ map (intersectClaims c) $ filter (\x -> c /= x) cs) |  c <-cs]
+
+hasOverlap x y = Set.empty /= intersectClaims x y 
+
+overlaps c cs = filter (hasOverlap c) cs
+
+findNonOverlap (c:cs) 
+    | overlaps c cs == [] = c
+    | otherwise =  findNonOverlap $ cs \\ overlaps c cs
+
+getClaim n cs = head $ filter (\x -> claimID x == n) cs
+
+fno cs = [c | c <- cs, 1 == (length $ overlaps c cs)]
