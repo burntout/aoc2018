@@ -34,13 +34,9 @@ claimToPoints claim = Set.fromList [ (x,y) | x <- [x1 .. x2], y <- [y1 .. y2]]
         x2 = x1 + xLength claim - 1
         y2 = y1 + yLength claim - 1
 
-pairs xs = [(x,y) | (x:ys) <- tails xs, y <- ys] 
-
 intersectClaims x y = Set.intersection xp yp
     where xp = claimToPoints x
           yp = claimToPoints y
-
-findNonOverlapping cs = filter (\x -> snd x == Set.empty) [(c, Set.unions $ map (intersectClaims c) $ filter (\x -> c /= x) cs) |  c <-cs]
 
 hasOverlap x y = Set.empty /= intersectClaims x y 
 
@@ -52,4 +48,4 @@ findNonOverlap (c:cs)
 
 getClaim n cs = head $ filter (\x -> claimID x == n) cs
 
-fno cs = [c | c <- cs, (length $ overlaps c cs) == 2]
+fno cs = [c | c <- cs, (length $ overlaps c cs) == 1]
