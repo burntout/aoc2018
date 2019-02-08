@@ -15,7 +15,7 @@ main = do
     dataText <- fmap Text.lines (Text.readFile "4.txt")
     let dataStrings =  map Text.unpack dataText
         logEntries = sort $ map dataStringToLogEntry dataStrings
-    putStrLn $ show $ logEntries 
+    putStrLn $ show $ map (getGuard . logText) $ filter (isGuardShift) logEntries
   
 
 dataStringToLogEntry str = LogEntry {logTime = logTime, logText = logText}
@@ -25,9 +25,21 @@ dataStringToLogEntry str = LogEntry {logTime = logTime, logText = logText}
         datePart = map (\x -> read x ::Int) $ splitOn "-" dateStr
         day = fromGregorian (toInteger (datePart!!0)) (datePart!!1) (datePart!!2)
         timePart = map (\x -> read x :: Integer) $ splitOn ":" timeStr
-        seconds = (60 * timePart!!0) + timePart!!1
+        seconds = (60 * 60 * timePart!!0) + 60 * timePart!!1
         logTime = UTCTime day $ fromInteger seconds
         
 trim = f . f
    where f = reverse . dropWhile isSpace
+
+isGuardShift logEntry = drop (length str - 12) str == "begins shift"
+    where
+        str = logText logEntry
+
+getGuard guardShift = read (tail $ (words guardShift)!!1)::Int
+
+isStartSleep logEntry= (logText logEntry) == "falls asleep"
+
+isEndSleep logEntry = (logText logEntry) == "wakes up"
+
+-- parseLogText
 
