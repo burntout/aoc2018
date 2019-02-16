@@ -23,10 +23,17 @@ main = do
         -- Leaving the fixed points that will have a finite area
         finitePoints = removeElements listOfClosestPoints pointsThatGoToInfinity
 
-        -- Finally calculate the area of regions, by counting 
+        -- Finally calculate the area of regions, by counting and get the maximum 
         getCountsOfClosestPoints = maximum [length $ filter (==(Just p)) finitePoints | p <- fixedPoints]
 
-    putStrLn $ show $ getCountsOfClosestPoints
+
+        -- Part2 find the area of the region <10000 from all fixed points
+        -- ge
+        allPointsDistances = map (getTotalDistance fixedPoints) allPointsToMeasure
+        getCountAllPointsWithinRange = length $ filter (<10000) allPointsDistances
+
+
+    putStrLn $ (show  getCountsOfClosestPoints) ++ "," ++  (show getCountAllPointsWithinRange) 
 
 
 -- Type to hold points in
@@ -58,16 +65,16 @@ getAllPointsToMeasure points = [Point { xcoord = x, ycoord = y } | x <- [minX  .
         maxY = maximum $ map ycoord points
 
 -- Get the points that form the boundary of the bounding box
-getBoundaryPoints points = r1 ++ r2 ++ r3 ++ r4
+getBoundaryPoints points = e1 ++ e2 ++ e3 ++ e4
     where 
         minX = minimum $ map xcoord points
         minY = minimum $ map ycoord points
         maxX = maximum $ map xcoord points
         maxY = maximum $ map ycoord points
-        r1 = [Point { xcoord = x, ycoord = minY } | x <- [minX .. maxX - 1]] 
-        r2 = [Point { xcoord = x, ycoord = maxY } | x <- [minX + 1 .. maxX]] 
-        r3 = [Point { xcoord = minX, ycoord = y } | y <- [minY + 1 .. maxY]] 
-        r4 = [Point { xcoord = maxX, ycoord = y } | y <- [minY .. maxY - 1]] 
+        e1 = [Point { xcoord = x, ycoord = minY } | x <- [minX .. maxX - 1]] 
+        e2 = [Point { xcoord = x, ycoord = maxY } | x <- [minX + 1 .. maxX]] 
+        e3 = [Point { xcoord = minX, ycoord = y } | y <- [minY + 1 .. maxY]] 
+        e4 = [Point { xcoord = maxX, ycoord = y } | y <- [minY .. maxY - 1]] 
 
 -- Given a list of fixed points and an arbitrary point return the unique fixed point closest, or Nothing if there is no unique one
 findClosestPoint :: [Point]-> Point -> Maybe Point
@@ -82,3 +89,6 @@ findClosestPoint ps p
 -- Function to remove a list of elements from another list 
 removeElements :: (Eq a) => [a] -> [a] -> [a]
 removeElements haves nots = [h | h <- haves, (h `elem` nots) == False]
+
+getTotalDistance :: [Point] -> Point -> Int
+getTotalDistance ps p = sum $ map (distance p) ps
