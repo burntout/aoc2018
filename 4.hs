@@ -3,7 +3,6 @@ import Data.Char (isSpace)
 import Data.List
 import Data.List.Split
 import qualified Data.Map     as Map
-import qualified Data.Set     as Set
 import qualified Data.Text    as Text
 import qualified Data.Text.IO as Text
 import Data.Time
@@ -16,13 +15,26 @@ data LogEntry = LogEntry  { logTime :: UTCTime
 main = do
     dataText <- fmap Text.lines (Text.readFile "4.txt")
     let dataStrings =  map Text.unpack dataText
+
+        -- Parse the input and turn into LogEntry types
+        -- Process the the logs using the Control.Monad.State
+        -- This outputs a Map keyed by Guard
+        --
         logEntries = sort $ map dataStringToLogEntry dataStrings
         startState = (0, Map.empty)
         logsByGuard = evalState (processLogs logEntries) startState
-    -- putStrLn $ show $ map (getGuard) $ filter (isGuardShift) logEntries
-    putStrLn $ show $ logsByGuard
-  
 
+        -- get a list of the guards
+        guards = Map.keys logsByGuard
+        
+        -- Lookup the times associated with that guard
+        times g = Map.lookup g logsByGuard
+        -- Lookup returns a Maybe so we need to use a bind to process the results 
+        sleepGuard g = times g >>= return . sleepLength
+        laziestGuard = snd $ maximum $ map (\x -> (sleepGuard x, x)) guards
+
+    print laziestGuard
+  
 dataStringToLogEntry str = LogEntry {logTime = logTime, logText = logText}
     where 
         [timestamp, logText] = map trim $ splitOn "]" $ splitOn "[" str >>= id
@@ -71,4 +83,8 @@ logType x
     | isStartSleep x = "sleep"
     | isEndSleep x   = "wakes"
 
--- getSleeps guardID guardLogs = guardLogs 
+startSleep times = map fst $ filter (\x-> snd x == 0) times
+endSleep times = map fst $ filter (\x-> snd x == 1) times
+sleepLength times = sum $ zipWith (diffUTCTime) (endSleep times) (startSleep times)
+
+testData = ["[1518-11-01 00:00] Guard #10 begins shift","[1518-11-01 00:05] falls asleep","[1518-11-01 00:25] wakes up","[1518-11-01 00:30] falls asleep","[1518-11-01 00:55] wakes up","[1518-11-01 23:58] Guard #99 begins shift","[1518-11-02 00:40] falls asleep","[1518-11-02 00:50] wakes up","[1518-11-03 00:05] Guard #10 begins shift","[1518-11-03 00:24] falls asleep","[1518-11-03 00:29] wakes up","[1518-11-04 00:02] Guard #99 begins shift","[1518-11-04 00:36] falls asleep","[1518-11-04 00:46] wakes up","[1518-11-05 00:03] Guard #99 begins shift","[1518-11-05 00:45] falls asleep","[1518-11-05 00:55] wakes up"]
