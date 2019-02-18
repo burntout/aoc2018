@@ -32,11 +32,11 @@ main = do
         sleepGuard g = times g >>= return . sleepLength
         laziestGuard = snd $ maximum $ map (\x -> (sleepGuard x, x)) guards
         laziestMinute = times laziestGuard >>= return . maxFreq . frequencies . dateToMin 
-		-- solution = (laziestMinute >>= return . (\x -> x * laziestGuard))
+        -- This is broken
+        -- need to look at Types Int and Integer in this somewhere
+        solution = laziestMinute >>= return . (* laziestGuard)
 
-    print laziestGuard
-    print laziestMinute
-	-- print solution
+    print solution
   
 dataStringToLogEntry str = LogEntry {logTime = logTime, logText = logText}
     where 
@@ -55,7 +55,7 @@ isGuardShift logEntry = drop (length str - 12) str == "begins shift"
     where
         str = logText logEntry
 
-getGuard logEntry = read (tail $ (words guardShift)!!1)::Int
+getGuard logEntry = read (tail $ (words guardShift)!!1)::Integer
     where guardShift = logText logEntry 
 
 isStartSleep logEntry= (logText logEntry) == "falls asleep"
