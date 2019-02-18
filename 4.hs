@@ -11,7 +11,6 @@ data LogEntry = LogEntry  { logTime :: UTCTime
                           , logText  :: String
                           } deriving (Eq, Ord, Show)
 
-
 main = do
     dataText <- fmap Text.lines (Text.readFile "4.txt")
     let dataStrings =  map Text.unpack dataText
@@ -32,8 +31,12 @@ main = do
         -- Lookup returns a Maybe so we need to use a bind to process the results 
         sleepGuard g = times g >>= return . sleepLength
         laziestGuard = snd $ maximum $ map (\x -> (sleepGuard x, x)) guards
+        laziestMinute = times laziestGuard >>= return . maxFreq . frequencies . dateToMin 
+		-- solution = (laziestMinute >>= return . (\x -> x * laziestGuard))
 
     print laziestGuard
+    print laziestMinute
+	-- print solution
   
 dataStringToLogEntry str = LogEntry {logTime = logTime, logText = logText}
     where 
@@ -83,10 +86,14 @@ logType x
     | isStartSleep x = "sleep"
     | isEndSleep x   = "wakes"
 
+startSleep :: [(UTCTime,Int)] -> [UTCTime]
 startSleep times = map fst $ filter (\x-> snd x == 0) times
-endSleep times = map fst $ filter (\x-> snd x == 1) times
-sleepLength times = sum $ zipWith (diffUTCTime) (endSleep times) (startSleep times)
 
+endSleep :: [(UTCTime,Int)] -> [UTCTime]
+endSleep times = map fst $ filter (\x-> snd x == 1) times
+
+sleepLength :: [(UTCTime, Int)] -> NominalDiffTime
+sleepLength times = sum $ zipWith (diffUTCTime) (endSleep times) (startSleep times)
 
 getMinuteOfTime :: UTCTime -> Integer
 getMinuteOfTime t = m
@@ -94,5 +101,16 @@ getMinuteOfTime t = m
         UTCTime day seconds = t
         m = (diffTimeToPicoseconds seconds) `quot` (60 * 10^12)
 
+dateToMin :: [(UTCTime, Int)] -> [Integer]
+dateToMin times = zipWith (\x y -> [x .. y]) sleepStartMins sleepEndMins >>= id
+    where
+        sleepStartMins = map getMinuteOfTime $ startSleep times
+        sleepEndMins  = map getMinuteOfTime $ endSleep times
+
+-- frequencies :: [a] -> Map a Integer
+frequencies []     = Map.empty
+frequencies (a:as) = Map.insert a (length (filter (==a) (a:as))) (frequencies $ filter (/= a) as)
+
+maxFreq x = fst . head $ Map.toList $ Map.filter ( == maximum x) x
 
 testData = ["[1518-11-01 00:00] Guard #10 begins shift","[1518-11-01 00:05] falls asleep","[1518-11-01 00:25] wakes up","[1518-11-01 00:30] falls asleep","[1518-11-01 00:55] wakes up","[1518-11-01 23:58] Guard #99 begins shift","[1518-11-02 00:40] falls asleep","[1518-11-02 00:50] wakes up","[1518-11-03 00:05] Guard #10 begins shift","[1518-11-03 00:24] falls asleep","[1518-11-03 00:29] wakes up","[1518-11-04 00:02] Guard #99 begins shift","[1518-11-04 00:36] falls asleep","[1518-11-04 00:46] wakes up","[1518-11-05 00:03] Guard #99 begins shift","[1518-11-05 00:45] falls asleep","[1518-11-05 00:55] wakes up"]
