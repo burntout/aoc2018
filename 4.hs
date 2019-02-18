@@ -32,8 +32,6 @@ main = do
         sleepGuard g = times g >>= return . sleepLength
         laziestGuard = snd $ maximum $ map (\x -> (sleepGuard x, x)) guards
         laziestMinute = times laziestGuard >>= return . maxFreq . frequencies . dateToMin 
-        -- This is broken
-        -- need to look at Types Int and Integer in this somewhere
         solution = laziestMinute >>= return . (* laziestGuard)
 
     print solution
