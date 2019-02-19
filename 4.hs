@@ -100,7 +100,7 @@ getMinuteOfTime t = m
         m = (diffTimeToPicoseconds seconds) `quot` (60 * 10^12)
 
 dateToMin :: [(UTCTime, Int)] -> [Integer]
-dateToMin times = zipWith (\x y -> [x .. y]) sleepStartMins sleepEndMins >>= id
+dateToMin times = zipWith (\x y -> [x .. y - 1]) sleepStartMins sleepEndMins >>= id
     where
         sleepStartMins = map getMinuteOfTime $ startSleep times
         sleepEndMins  = map getMinuteOfTime $ endSleep times
