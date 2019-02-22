@@ -31,10 +31,10 @@ main = do
         laziestMinute = Map.lookup laziestGuard logsByGuard >>= return . fst . findMax . frequencies . dateToMin 
         solution1 = laziestMinute >>= return . (* laziestGuard)
 
-        -- solution2 = findMax $ Map.map (fst . findMax) $ Map.map frequencies $ Map.map dateToMin logsByGuard
+        solution2 = uncurry (*) $ findMax $ Map.map (fst . findMax) $ Map.map frequencies $ Map.map dateToMin logsByGuard
 
     print solution1
-    -- print solution2
+    print solution2
   
 dataStringToLogEntry str = LogEntry {logTime = logTime, logText = logText}
     where 
@@ -112,7 +112,6 @@ frequencies (a:as) = Map.insert a (length (filter (==a) (a:as))) (frequencies $ 
 
 findMax :: Ord a => Map.Map k a -> (k, a)
 findMax x = head $ Map.toList $ Map.filter ( == maximum x) x
--- maxFreq x = fst . head $ Map.toList $ Map.filter ( == maximum x) x
 
 testData = ["[1518-11-01 00:00] Guard #10 begins shift","[1518-11-01 00:05] falls asleep","[1518-11-01 00:25] wakes up","[1518-11-01 00:30] falls asleep","[1518-11-01 00:55] wakes up","[1518-11-01 23:58] Guard #99 begins shift","[1518-11-02 00:40] falls asleep","[1518-11-02 00:50] wakes up","[1518-11-03 00:05] Guard #10 begins shift","[1518-11-03 00:24] falls asleep","[1518-11-03 00:29] wakes up","[1518-11-04 00:02] Guard #99 begins shift","[1518-11-04 00:36] falls asleep","[1518-11-04 00:46] wakes up","[1518-11-05 00:03] Guard #99 begins shift","[1518-11-05 00:45] falls asleep","[1518-11-05 00:55] wakes up"]
 testLogEntries = map dataStringToLogEntry testData
