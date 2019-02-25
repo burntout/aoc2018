@@ -14,8 +14,11 @@ main = do
     nodesText <- fmap Text.lines (Text.readFile "7.txt")
     let nodesStrings = map Text.unpack nodesText
         nodes = getNodes $ map stringToTuple nodesStrings 
-        solution = map nodeName $ map getNextToRemove  $ takeWhile (/= []) $ iterate f nodes
-    putStrLn solution
+        path = takeWhile (/= []) $ iterate f nodes
+        solution = map nodeName $ map getNextToRemove  $ path
+        numberCanRemove = map ((map nodeName) . canRemove) path
+    putStrLn solution 
+    print $ show numberCanRemove
 
 stringToTuple s = (a, b)
     where 
@@ -31,7 +34,8 @@ allID as = nub $ (map fst as) ++ (map snd as)
 
 getNodes xs = [ Node {nodeName = x, parents = findAllParents x xs, children = findAllChildren x xs} | x <- allID xs ]
 
-getNextToRemove xs = head $ filter (\x -> parents x == "") $ sort xs
+canRemove xs = filter (\x -> parents x == "") $ sort xs
+getNextToRemove xs = head $ canRemove xs
 
 removeNode x xs = ys
     where
