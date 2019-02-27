@@ -7,7 +7,8 @@ import qualified Data.Text.IO as Text
 
 data Node = Node { nodeName :: Char,
                    parents :: String, 
-                   children :: String
+                   children :: String,
+                   weight   :: Int
                  } deriving (Eq, Ord, Show)
 
 main = do
@@ -32,7 +33,11 @@ findAllChildren a as = (map snd $ filter (\x -> a == fst x) as)
 findAllParents a as = (map fst $ filter (\x -> a == snd x) as)
 allID as = nub $ (map fst as) ++ (map snd as)
 
-getNodes xs = [ Node {nodeName = x, parents = findAllParents x xs, children = findAllChildren x xs} | x <- allID xs ]
+getNodes xs = [ Node {nodeName = x, parents = findAllParents x xs, children = findAllChildren x xs, weight = charToWeight x} | x <- allID xs ]
+
+charToWeight :: Char -> Int
+charToWeight c = ord c - 4 
+
 
 canRemove xs = filter (\x -> parents x == "") $ sort xs
 getNextToRemove xs = head $ canRemove xs
@@ -40,6 +45,18 @@ getNextToRemove xs = head $ canRemove xs
 removeNode x xs = ys
     where
         bs = filter (/= x) xs
-        ys = [Node {nodeName = nodeName y, parents = filter (/=(nodeName x)) $ parents y, children = children y}  | y <- bs] 
+        ys = [Node {nodeName = nodeName y, parents = filter (/=(nodeName x)) $ parents y, children = children y, weight = weight y}  | y <- bs] 
 
 f x = removeNode (getNextToRemove x) x
+
+queues :: [[Node]]
+queues = [[],[]]
+
+subWeight x y = max 0 $ x - y  
+
+sortNodeByWeight n1 n2 
+    | weight n1 < weight n2 = LT
+    | weight n1 > weight n2 = GT
+    | weight n1 == weight n2  = compare (nodeName n1) (nodeName n2)
+    
+
