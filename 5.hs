@@ -6,7 +6,6 @@ main = do
     polymerText <- fmap Text.lines (Text.readFile "5.txt")
     let polymerString =  head $ map Text.unpack polymerText
         allReactions = iterate reactPolymer polymerString
-    -- Use `until` to repeatedly apply reactPolymer until no more changes
     putStrLn $ show $ length $ completelyReact polymerString 
 
 testPolymer = "dabAcCaCBAcCcaDA"
