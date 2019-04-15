@@ -1,8 +1,8 @@
 import Data.List
 
 data Board = Board { active :: Int, placing :: [Int] } deriving (Eq, Show)
-data Player = Player { playerID :: Int, score :: Int } deriving (Eq, Show)
-data GameState = GameState {players :: [Player], currentPlayerID :: Player, currentBoard :: Board, availableMarbles :: [Int]} deriving (Eq, Show)
+data Player = Player { playerID :: Int, score :: Int } deriving (Eq, Ord, Show)
+data GameState = GameState {players :: [Player], currentPlayerID :: Int, currentBoard :: Board, currentMarble :: Int} deriving (Eq, Show)
 
 -- unsafe version of elemIndex
 getIndex x xs = n
@@ -33,14 +33,14 @@ newb23 newItem board = (newItem + (last front), Board {active = newActive, placi
         index = getIndex current $ cb
         -- (subtract 6, cause indexes are from zero), or something
         split = (makePos (index - 6) l) `mod` l
-        newActiveIndex = (split + 1) `mod` l
+        newActiveIndex = split
         newActive = cb!!newActiveIndex
         (front, end) = splitAt split cb
 
-getNextPlayer currentPlayer players = head $ filter (\x -> playerID x == nextPlayerID ) players
+getNextPlayer currentPlayer players = nextPlayerID
     where 
         numPlayers = length players
-        nextPlayerID = incIfZero (((playerID currentPlayer) + 1) `mod` numPlayers) numPlayers
+        nextPlayerID = incIfZero ((currentPlayer + 1) `mod` numPlayers) numPlayers
         incIfZero x d 
            | x == 0    = x + d 
            | otherwise = x
@@ -51,27 +51,28 @@ playMarble m b
 
 updatePlayers players player newScore = unchangedPlayers ++ [updatedPlayer]
     where 
-        unchangedPlayers = filter (\x -> playerID x /= playerID player ) players
-        updatedPlayer = Player { playerID = playerID player, score = newScore + (score player)}
+        unchangedPlayers = filter (\x -> playerID x /= player ) players
+        changedPlayer = head $ filter (\x -> playerID x == player ) players
+        updatedPlayer = Player { playerID = player, score = newScore + (score changedPlayer)}
     
-getNextGameState game = GameState {players = updatedPlayers, currentPlayer = nextPlayer, currentBoard = nextBoard, availableMarbles = remainingMarbles}
+getNextGameState game = GameState {players = updatedPlayers, currentPlayerID = nextPlayer, currentBoard = nextBoard, currentMarble = nextMarble}
     where
-        playingMarble = head $ availableMarbles game
-        remainingMarbles = tail $ availableMarbles game
-        nextPlayer = getNextPlayer (currentPlayer game) (players game)
+        playingMarble = currentMarble game
+        nextMarble = 1 + playingMarble
+        nextPlayer = getNextPlayer (currentPlayerID game) (players game)
         (moveScore, nextBoard) = playMarble playingMarble $ currentBoard game
-        updatedPlayers = updatePlayers (players game) (currentPlayer game) moveScore
-        
+        updatedPlayers = updatePlayers (players game) (currentPlayerID game) moveScore
+--        
+--
+playGame :: Int -> Int -> GameState
+playGame numPlayers maxMarble = playGame' initialGameState maxMarble
+    where 
+        elves = map (\x -> Player {playerID = x, score = 0}) [1 .. numPlayers]
+        initBoard = Board { active = 0, placing = [0] }
+        initialGameState = GameState { players = elves, currentPlayerID = 1, currentBoard = initBoard, currentMarble = 1 }
 
-playGame game
-    | availableMarbles game == [] = game
-    | otherwise                 = playGame $ getNextGameState game
-
-elves = map (\x -> Player {playerID = x, score = 0}) [1 .. 411]
-initPlayer = head $ filter (\x -> playerID x == 1 ) elves
-initBoard = Board { active = 0, placing = [0] }
-initMarbles = [1 .. 72059]
-
-initialGameState = GameState { players = elves, currentPlayer = initPlayer, currentBoard = initBoard, availableMarbles = initMarbles }
+playGame' game largestMarble
+    | currentMarble game > largestMarble = game
+    | otherwise                 = playGame' (getNextGameState game) largestMarble
 
 
