@@ -1,8 +1,14 @@
 import Data.List
 
 data Board = Board { active :: Int, placing :: [Int] } deriving (Eq, Show)
-data Player = Player { playerID :: Int, score :: Int } deriving (Eq, Ord, Show)
+data Player = Player { playerID :: Int, score :: Int } deriving (Eq, Show)
 data GameState = GameState {players :: [Player], currentPlayerID :: Int, currentBoard :: Board, currentMarble :: Int} deriving (Eq, Show)
+
+instance Ord Player where
+    compare x y
+        | (playerID x == playerID y) && (score x == score y) = EQ
+        | score x <= score y = LT
+        | otherwise          = GT
 
 -- unsafe version of elemIndex
 getIndex x xs = n
