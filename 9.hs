@@ -5,14 +5,6 @@ import Data.List.Split
 import Control.Monad.State
 
 data Board = Board { active :: Int, placing :: [Int] } deriving (Eq, Show)
---data Player = Player { playerID :: Int, score :: Int } deriving (Eq, Show)
---data GameState = GameState {players :: [Player], currentPlayerID :: Int, currentBoard :: Board, currentMarble :: Int} deriving (Eq, Show)
---
---instance Ord Player where
---    compare x y
---        | (playerID x == playerID y) && (score x == score y) = EQ
---        | score x <= score y = LT
---        | otherwise          = GT
 
 -- unsafe version of elemIndex
 getIndex x xs = n
@@ -77,33 +69,4 @@ game numPlayers maxMarble = map sum $ transpose chunked
         result = evalState (playGame [1 .. maxMarble])  startState
         chunked = chunksOf numPlayers result
 
-main = print $ maximum $ game 411 72059
-
-
---updatePlayers players player newScore = unchangedPlayers ++ [updatedPlayer]
---    where 
---        unchangedPlayers = filter (\x -> playerID x /= player ) players
---        changedPlayer = head $ filter (\x -> playerID x == player ) players
---        updatedPlayer = Player { playerID = player, score = newScore + (score changedPlayer)}
---    
---getNextGameState game = GameState {players = updatedPlayers, currentPlayerID = nextPlayer, currentBoard = nextBoard, currentMarble = nextMarble}
---    where
---        playingMarble = currentMarble game
---        nextMarble = 1 + playingMarble
---        nextPlayer = getNextPlayer (currentPlayerID game) (players game)
---        (moveScore, nextBoard) = playMarble playingMarble $ currentBoard game
---        updatedPlayers = updatePlayers (players game) (currentPlayerID game) moveScore
-----        
-----
---playGame :: Int -> Int -> GameState
---playGame numPlayers maxMarble = playGame' initialGameState maxMarble
---    where 
---        elves = map (\x -> Player {playerID = x, score = 0}) [1 .. numPlayers]
---        initBoard = Board { active = 0, placing = [0] }
---        initialGameState = GameState { players = elves, currentPlayerID = 1, currentBoard = initBoard, currentMarble = 1 }
---
---playGame' game largestMarble
---    | currentMarble game > largestMarble = game
---    | otherwise                 = playGame' (getNextGameState game) largestMarble
---
-
+main = print $ maximum $ game 13 7999
