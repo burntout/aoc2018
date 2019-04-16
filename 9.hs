@@ -77,6 +77,9 @@ game numPlayers maxMarble = map sum $ transpose chunked
         result = evalState (playGame [1 .. maxMarble])  startState
         chunked = chunksOf numPlayers result
 
+main = print $ maximum $ game 411 72059
+
+
 --updatePlayers players player newScore = unchangedPlayers ++ [updatedPlayer]
 --    where 
 --        unchangedPlayers = filter (\x -> playerID x /= player ) players
