@@ -42,6 +42,8 @@ playGame numPlayers (x:xs) = do
     (scores, board) <- get
     let (score, newBoard) =  playMarble x board
     let player = x `mod` numPlayers
+    -- only update the scores if we have to
+    -- makes a big difference to running time
     case score of 
         0 -> put (scores, newBoard)
         _ -> put (Map.insertWith (+) player score scores, newBoard)
