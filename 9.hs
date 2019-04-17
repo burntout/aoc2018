@@ -1,72 +1,58 @@
 {-# LANGUAGE FlexibleContexts #-}
 
+import Data.CircularList
+import qualified Data.Map as Map
 import Data.List
 import Data.List.Split
 import Control.Monad.State
 
-data Board = Board { active :: Int, placing :: [Int] } deriving (Eq, Show)
-
--- unsafe version of elemIndex
-getIndex x xs = n
-    where Just n = elemIndex x xs 
-
--- little function to find smallest positive number == a negative number mod l
-makePos x l 
-    | x >= 0     = x
-    | otherwise  = makePos (x + l) l
-
+-- unsafe version of Clist focus
+getFocus cl = n
+    where Just n = focus cl
 
 -- returns a tuple of score and a new board from an existing one using the standard rule
-newb newItem board = (0, Board { active = newItem, placing = front ++ [newItem] ++ end})
+newb newMarble board = (0, newBoard)
     where 
-        cb = placing board
-        l = length cb
-        current = active board
-        index = getIndex current $ cb
-        split = (index + 2) `mod` l 
-        (front, end) = splitAt split cb
+        newBoard = insertL newMarble $ rotR board
 
 -- returns a tuple of the score and a new board from an existing one using the 23 marble rule
-newb23 newItem board = (newItem + (last front), Board {active = newActive, placing = (init front) ++ end})
+newb23 newMarble board = (newMarble + removedMarble, newBoard)
     where
-        cb = placing board
-        l = length cb
-        current = active board
-        index = getIndex current $ cb
-        -- (subtract 6, cause indexes are from zero), or something
-        split = (makePos (index - 6) l) `mod` l
-        newActiveIndex = split
-        newActive = cb!!newActiveIndex
-        (front, end) = splitAt split cb
+        tmpBoard = rotN (-7) board
+        removedMarble  = getFocus tmpBoard
+        newBoard = removeR tmpBoard
 
-getNextPlayer currentPlayer players = nextPlayerID
-    where 
-        numPlayers = length players
-        nextPlayerID = incIfZero ((currentPlayer + 1) `mod` numPlayers) numPlayers
-        incIfZero x d 
-           | x == 0    = x + d 
-           | otherwise = x
-
+-- play a marble, just picks the appropriate rule depending on the marble
 playMarble m b 
     | m `mod` 23 == 0  = newb23 m b
     | otherwise        = newb m b
 
 
-playGame []     = do
+-- If we have no marbles, then there is nothing to do so
+-- just return the player scores from the game state.
+playGame _ []     = do
     (scores, _) <- get
     return scores
 
-playGame (x:xs) = do
+-- play the game.  Pop a marble from the list of marbles
+-- get the current state of scores and board
+-- play the marble and alter the state
+-- the ... do it again, but with the remaining marbles
+playGame numPlayers (x:xs) = do
     (scores, board) <- get
     let (score, newBoard) =  playMarble x board
-    put (scores ++ [score], newBoard)
-    playGame xs
+    let player = x `mod` numPlayers
+    case score of 
+        0 -> put (scores, newBoard)
+        _ -> put (Map.insertWith (+) player score scores, newBoard)
+    playGame numPlayers xs
 
-
-game numPlayers maxMarble = map sum $ transpose chunked 
+-- initialise the game scores as a Map
+-- and the board as a CList for easy insertion and moving etc
+game numPlayers maxMarble = result
     where 
-        startState = ([], Board { active = 0, placing = [0] })
-        result = evalState (playGame [1 .. maxMarble])  startState
-        chunked = chunksOf numPlayers result
+        initScores = Map.fromList [(i,0) | i <- [0 .. numPlayers -1]]
+        startState = (initScores, fromList [0])
+        result = evalState (playGame numPlayers [1 .. maxMarble]) startState
 
-main = print $ maximum $ game 13 7999
+main = print $ maximum $ game 411 7205900
