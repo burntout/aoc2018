@@ -53,7 +53,7 @@ playGame numPlayers (x:xs) = do
 -- and the board as a CList for easy insertion and moving etc
 game numPlayers maxMarble = result
     where 
-        initScores = Map.fromList [(i,0) | i <- [0 .. numPlayers -1]]
+        initScores = Map.fromList []
         startState = (initScores, fromList [0])
         result = evalState (playGame numPlayers [1 .. maxMarble]) startState
 
