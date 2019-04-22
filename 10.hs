@@ -40,13 +40,17 @@ initArray ps = array ((xMin, yMin),(xMax,yMax)) [((x,y),'.') | x<-[xMin .. xMax]
        yMax = maximum $ map snd $ map pos ps
        yMin = minimum $ map snd $ map pos ps
 
+
 printArray a = putStr $ [ r | r <- rows] >>= (\x -> x ++ "\n")
     where
          rows = [[a!(x,y)| x <-[xmin .. xmax]] |  y <-[ymin .. ymax]]
          ((xmin,ymin),(xmax,ymax)) = bounds a
 
--- applyPoints arr ps 
+applyPoints arr points = arr//ps
+    where  
+        ps = [ (p,'#') |  p <- map pos points]
 
+toArray points = applyPoints (initArray points) points 
 
 
 main = do
@@ -54,10 +58,10 @@ main = do
     let ss = map Text.unpack tls
         inputData = map getPosVel ss
     -- print $ elemIndex 61 $ map xRange $ take 10200 $ iterate (map nextPoint) inputData
-        points = last$ take 10013 $ iterate (map nextPoint) inputData
+        points = drop 10011 $ take 10012 $ iterate (map nextPoint) inputData
         -- xmin = xRange points
         -- ymin = yRange points
-    print $ maximum $ map snd $ map pos points 
+    mapM_ printArray $ map toArray points
 
 
 
