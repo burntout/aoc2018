@@ -1,10 +1,13 @@
+{-# LANGUAGE FlexibleContexts #-}
+
+import Control.Monad.State
 import Data.Array
 import Data.Char
 import qualified Data.Text    as Text
 import qualified Data.Text.IO as Text
 import Data.List
 import Data.List.Split
-
+import Debug.Trace
 
 data Point = Point {pos :: (Int, Int), vel :: (Int, Int)} deriving (Eq, Show)
 
@@ -40,7 +43,6 @@ initArray ps = array ((xMin, yMin),(xMax,yMax)) [((x,y),'.') | x<-[xMin .. xMax]
        yMax = maximum $ map snd $ map pos ps
        yMin = minimum $ map snd $ map pos ps
 
-
 printArray a = putStr $ [ r | r <- rows] >>= (\x -> x ++ "\n")
     where
          rows = [[a!(x,y)| x <-[xmin .. xmax]] |  y <-[ymin .. ymax]]
@@ -52,16 +54,29 @@ applyPoints arr points = arr//ps
 
 toArray points = applyPoints (initArray points) points 
 
+moveLoop = do
+    (cnt, points) <- get
+    let oldArea  = (xRange points) * (yRange points)
+        newPoints = map nextPoint points
+        -- newArea = trace ("oldArea: " ++ show oldArea) $ (xRange newPoints) * (yRange newPoints)
+        newArea = (xRange newPoints) * (yRange newPoints)
+
+    put (cnt + 1, newPoints)
+    if newArea < oldArea 
+        then moveLoop
+        else return (cnt, points)
+
+doMoveLoop points = result
+    where 
+        result = evalState (moveLoop) (0 :: Int, points)
 
 main = do
     tls <- fmap Text.lines (Text.readFile "10.txt")
     let ss = map Text.unpack tls
         inputData = map getPosVel ss
-    -- print $ elemIndex 61 $ map xRange $ take 10200 $ iterate (map nextPoint) inputData
-        points = drop 10011 $ take 10012 $ iterate (map nextPoint) inputData
-        -- xmin = xRange points
-        -- ymin = yRange points
-    mapM_ printArray $ map toArray points
+        (cnt, points) = doMoveLoop inputData
+    printArray $ toArray points
+    putStrLn $ show cnt
 
 
 
