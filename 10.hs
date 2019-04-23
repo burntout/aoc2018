@@ -36,6 +36,8 @@ yRange ps = yMax - yMin
         yMax = maximum $ map snd $ map pos ps
         yMin = minimum $ map snd $ map pos ps
 
+area points = (xRange points) * (yRange points)
+
 initArray ps = array ((xMin, yMin),(xMax,yMax)) [((x,y),'.') | x<-[xMin .. xMax], y<-[yMin .. yMax]]
    where
        xMax = maximum $ map fst $ map pos ps
@@ -55,20 +57,19 @@ applyPoints arr points = arr//ps
 toArray points = applyPoints (initArray points) points 
 
 moveLoop = do
-    (cnt, points) <- get
-    let oldArea  = (xRange points) * (yRange points)
-        newPoints = map nextPoint points
+    (cnt, oldArea, points) <- get
+    let newPoints = map nextPoint points
         -- newArea = trace ("oldArea: " ++ show oldArea) $ (xRange newPoints) * (yRange newPoints)
-        newArea = (xRange newPoints) * (yRange newPoints)
+        newArea = area newPoints
 
-    put (cnt + 1, newPoints)
+    put (cnt + 1, newArea, newPoints)
     if newArea < oldArea 
         then moveLoop
         else return (cnt, points)
 
 doMoveLoop points = result
     where 
-        result = evalState (moveLoop) (0 :: Int, points)
+        result = evalState (moveLoop) (0, area points,  points)
 
 main = do
     tls <- fmap Text.lines (Text.readFile "10.txt")
