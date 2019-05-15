@@ -89,4 +89,4 @@ findStablePattern growFunc = do
 main = print $ result ((50000000000 - generations) * offsetDiff + offset, plants)
 
 -- Solution to Part 1 
-main = print $ result $ last $ take 21 $ iterate (processPlants myF) (0, inputData)
+-- main = print $ result $ last $ take 21 $ iterate (processPlants myF) (0, inputData)
